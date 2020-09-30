@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const { test } = require('../controllers/controller');
 module.exports = (sequelize, DataTypes) => {
   class Customer extends Model {
     /**
@@ -14,7 +15,23 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Customer.init({
-    identityNumber: DataTypes.STRING,
+    identityNumber: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: {
+          msg: 'Identity Number must be filled'
+        },
+        checkLength(value) {
+          let regex = RegExp('(?=.{16,20})')
+          if (!regex.test(value)) {
+            throw new Error('Identity Number minimum 16 characters and maximum 20 characters')
+          }
+        },
+        checkDuplicate(value) {
+
+        },
+      }
+    },
     fullName: DataTypes.STRING,
     address: DataTypes.STRING,
     birthDate: DataTypes.DATE,
@@ -22,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     otp: DataTypes.STRING
   }, {
     sequelize,
+    indexes: [{unique: true, fields: ['identityNumber', 'otp']}],
     modelName: 'Customer',
   });
   return Customer;
